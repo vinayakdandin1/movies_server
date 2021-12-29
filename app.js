@@ -14,6 +14,29 @@ const app = express();
 // ℹ️ This function is getting exported from the config folder. It runs most pieces of middleware
 require("./config")(app);
 
+//---------------------------------------------------------
+// --------YOUR session config has been done here---------
+//---------------------------------------------------------
+// Set up connect-mongo
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized: false, 
+    resave: false, 
+    cookie: {
+      maxAge: 1000*60*60*24// is in milliseconds.  expiring in 1 day
+    },
+    store: new MongoStore({
+      mongoUrl: process.env.MONGODB_URI || "mongodb://localhost/moviesApp",
+      ttl: 60*60*24, // is in seconds. expiring in 1 day
+    })
+}));
+
+// const path = require('path');
+// app.use(express.static(path.join(__dirname, 'public')));
+
 // 👇 Start handling routes here
 // Contrary to the views version, all routes are controled from the routes/index.js
 const allRoutes = require("./routes");

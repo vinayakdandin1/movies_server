@@ -36,7 +36,9 @@ router.get('/main', (req, res) => {
 
   axios
       .get(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${key}&language=en-US&page=1`
+        // `https://api.themoviedb.org/3/movie/popular?api_key=${key}&language=en-US&page=1`
+        // `https://api.themoviedb.org/3/movie/now_playing?api_key=${key}&language=en-US&page=1`
+        `https://api.themoviedb.org/3/movie/latest?api_key=${key}&language=en-US&page=1`
       )
       .then((popularMovies) => {
         // let result = req.session.user;

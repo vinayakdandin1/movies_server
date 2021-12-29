@@ -6,11 +6,11 @@ const bcrypt = require('bcryptjs');
 const UserModel = require('../models/User.model')
 
 router.post('/signup', (req, res) => {
-    const {emailId, password, firstName, lastName } = req.body;
+    const {email, password, userName } = req.body;
  
     // -----SERVER SIDE VALIDATION ----------
 
-    if (!emailId || !password || !firstName) {
+    if (!email || !password || !userName) {
         res.status(500)
           .json({
             errorMessage: 'Email, password and First name are necessary'
@@ -19,7 +19,7 @@ router.post('/signup', (req, res) => {
     }
 
     const myRegex = new RegExp(/^[a-z0-9](?!.*?[^\na-z0-9]{2})[^\s@]+@[^\s@]+\.[^\s@]+[a-z0-9]$/);
-    if (!myRegex.test(emailId)) {
+    if (!myRegex.test(email)) {
         res.status(500).json({
           errorMessage: 'Email format not correct'
         });
@@ -39,7 +39,7 @@ router.post('/signup', (req, res) => {
     let salt = bcrypt.genSaltSync(10);
     let hash = bcrypt.hashSync(password, salt);
 
-    UserModel.create({firstName, lastName, emailId, password: hash})
+    UserModel.create({email, passwordHash: hash, userName})
       .then((user) => {
         // ensuring that we don't share the hash as well with the user
         user.password = "***";
@@ -63,18 +63,18 @@ router.post('/signup', (req, res) => {
  
 // will handle all POST requests to http:localhost:5005/api/signin
 router.post('/signin', (req, res) => {
-    const {emailId, password } = req.body;
+  const {email, password } = req.body;
 
     // -----SERVER SIDE VALIDATION ----------
     
-    if ( !emailId || !password) {
+    if ( !email || !password) {
         res.status(500).json({
             error: 'Email and Password are required',
        })
       return;  
     }
     const myRegex = new RegExp(/^[a-z0-9](?!.*?[^\na-z0-9]{2})[^\s@]+@[^\s@]+\.[^\s@]+[a-z0-9]$/);
-    if (!myRegex.test(emailId)) {
+    if (!myRegex.test(email)) {
         res.status(500).json({
             error: 'Email format not correct',
         })
@@ -82,7 +82,7 @@ router.post('/signin', (req, res) => {
     }
     
     // Find if the user exists in the database 
-    UserModel.findOne({emailId})
+    UserModel.findOne({email})
       .then((userData) => {
            //check if passwords match
           bcrypt.compare(password, userData.password)
@@ -90,8 +90,8 @@ router.post('/signin', (req, res) => {
                 //if it matches
                 if (doesItMatch) {
                   // req.session is the special object that is available to you
-                  userData.password = "***";
-                  req.session.user = userData;
+                  userData.passwordHash = "***";
+                  req.session.loggedInUser = userData;
                   res.status(200).json(userData) 
                 }
                 //if passwords do not match
